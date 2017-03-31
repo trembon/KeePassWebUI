@@ -43,15 +43,33 @@
         </div>
     </nav>
 
-    <div class="container-fluid">
+    <div id="content" class="container-fluid">
         <div class="row">
             <div class="col-md-3">
-                <div id="catalog-tree"></div>
+                <div id="catalog-tree-scroll-wrapper">
+                    <div id="catalog-tree"></div>
+                </div>
             </div>
             <div class="col-md-9">
-                <div class="tool-banner">
+
+                <div id="tool-banner">
+                    <a class="button" href="#">
+                        <span class="glyphicon glyphicon-plus"></span>
+                        <span>Add Entry</span>
+                    </a>
+                    <a class="button" href="#">
+                        <span class="glyphicon glyphicon-edit"></span>
+                        <span>Edit Entry</span>
+                    </a>
+                    <a class="button" href="#">
+                        <span class="glyphicon glyphicon-remove-circle"></span>
+                        <span>Remove Entry</span>
+                    </a>
                 </div>
-                <div id="list"></div>
+
+                <div id="list-scroll-wrapper">
+                    <div id="list"></div>
+                </div>
             </div>
         </div>
     </div>
