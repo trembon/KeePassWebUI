@@ -1,4 +1,5 @@
 ﻿using KeePassLib;
+using KeePassWebUI.DAL;
 using KeePassWebUI.Models;
 using Microsoft.AspNet.SignalR;
 using System;
@@ -18,8 +19,12 @@ namespace KeePassWebUI.Hubs
         public Catalog GetRootNode()
         {
             Catalog root = new Catalog();
-            root.ID = KeePassDatabase.Root.Uuid.ToHexString();
-            root.Name = KeePassDatabase.Root.Name;
+
+            using (var context = new KeePassContext())
+            {
+                root.ID = context.GetRoot().Uuid.ToHexString();
+                root.Name = context.GetRoot().Name;
+            }
 
             return root;
         }
@@ -27,16 +32,19 @@ namespace KeePassWebUI.Hubs
         public IEnumerable<Catalog> GetChildren(string catalogId)
         {
             PwGroup parent = null;
-            if (KeePassDatabase.Root.Uuid.ToHexString() == catalogId)
+            using (var context = new KeePassContext())
             {
-                parent = KeePassDatabase.Root;
-            }
-            else
-            {
-                parent = KeePassDatabase
-                    .Root
-                    .GetFlatGroupList()
-                    .FirstOrDefault(g => g.Uuid.ToHexString() == catalogId);
+                if (context.GetRoot().Uuid.ToHexString() == catalogId)
+                {
+                    parent = context.GetRoot();
+                }
+                else
+                {
+                    parent = context
+                        .GetRoot()
+                        .GetFlatGroupList()
+                        .FirstOrDefault(g => g.Uuid.ToHexString() == catalogId);
+                }
             }
 
             if (parent == null)

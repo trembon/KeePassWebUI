@@ -1,4 +1,5 @@
 ﻿using KeePassLib;
+using KeePassWebUI.DAL;
 using KeePassWebUI.Models;
 using Microsoft.AspNet.SignalR;
 using System;
@@ -13,16 +14,19 @@ namespace KeePassWebUI.Hubs
         public List<Entry> GetEntries(string catalogId)
         {
             PwGroup parent = null;
-            if (KeePassDatabase.Root.Uuid.ToHexString() == catalogId)
+            using (var context = new KeePassContext())
             {
-                parent = KeePassDatabase.Root;
-            }
-            else
-            {
-                parent = KeePassDatabase
-                    .Root
-                    .GetFlatGroupList()
-                    .FirstOrDefault(g => g.Uuid.ToHexString() == catalogId);
+                if (context.GetRoot().Uuid.ToHexString() == catalogId)
+                {
+                    parent = context.GetRoot();
+                }
+                else
+                {
+                    parent = context
+                        .GetRoot()
+                        .GetFlatGroupList()
+                        .FirstOrDefault(g => g.Uuid.ToHexString() == catalogId);
+                }
             }
 
             if (parent == null)

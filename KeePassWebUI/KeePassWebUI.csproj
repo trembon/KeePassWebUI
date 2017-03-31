@@ -164,7 +164,7 @@
   <ItemGroup>
     <Compile Include="Hubs\CatalogReaderHub.cs" />
     <Compile Include="Hubs\EntryReaderHub.cs" />
-    <Compile Include="KeePassDatabase.cs" />
+    <Compile Include="DAL\KeePassContext.cs" />
     <Compile Include="Models\Catalog.cs" />
     <Compile Include="Models\Entry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
