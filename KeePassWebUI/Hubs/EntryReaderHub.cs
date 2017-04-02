@@ -11,38 +11,15 @@ namespace KeePassWebUI.Hubs
 {
     public class EntryReaderHub : Hub
     {
-        public List<Entry> GetEntries(string catalogId)
+        public List<KPEntry> GetEntries(string groupId)
         {
-            PwGroup parent = null;
-            using (var context = new KeePassContext())
+            using (var context = KeePassContext.Create())
             {
-                if (context.GetRoot().Uuid.ToHexString() == catalogId)
-                {
-                    parent = context.GetRoot();
-                }
-                else
-                {
-                    parent = context
-                        .GetRoot()
-                        .GetFlatGroupList()
-                        .FirstOrDefault(g => g.Uuid.ToHexString() == catalogId);
-                }
+                return context
+                    .Enties
+                    .Where(e => e.GroupID == groupId)
+                    .ToList();
             }
-
-            if (parent == null)
-                return new List<Entry>();
-
-            return parent
-                .Entries
-                .Select(e => new Entry
-                {
-                    ID = e.Uuid.ToHexString(),
-                    Name = e.Strings.GetSafe("Title").ReadString(),
-                    Username = e.Strings.GetSafe("UserName").ReadString(),
-                    Url = e.Strings.GetSafe("URL").ReadString(),
-                    Password = e.Strings.GetSafe("Password").ReadString()
-                })
-                .ToList();
         }
     }
 }

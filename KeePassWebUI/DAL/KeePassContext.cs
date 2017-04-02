@@ -1,9 +1,12 @@
 ﻿using KeePassLib;
+using KeePassLib.Collections;
 using KeePassLib.Keys;
 using KeePassLib.Serialization;
+using KeePassWebUI.Models;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Drawing;
 using System.Linq;
 using System.Web;
 
@@ -11,32 +14,27 @@ namespace KeePassWebUI.DAL
 {
     public class KeePassContext : IDisposable
     {
-        private bool opened = false;
         private PwDatabase database;
+        private bool databaseOpen;
 
         private static PwGroup cache_group;
 
-        public PwDatabase Database
+        private KeePassContext()
         {
-            get
-            {
-                if (!opened)
-                    throw new InvalidOperationException();
-
-                return database;
-            }
+            databaseOpen = false;
         }
 
-        public KeePassContext()
+        public static KeePassContext Create()
         {
+            return new KeePassContext();
         }
 
-        private PwDatabase Open()
+        private void Open()
         {
-            if (opened)
-                return database;
+            if (databaseOpen)
+                return;
 
-            opened = true;
+            databaseOpen = true;
 
             var ioConnInfo = new IOConnectionInfo { Path = ConfigurationManager.AppSettings["databasePath"] };
             var compKey = new CompositeKey();
@@ -49,8 +47,6 @@ namespace KeePassWebUI.DAL
 
             database = new PwDatabase();
             database.Open(ioConnInfo, compKey, null);
-
-            return database;
         }
 
         public void Dispose()
@@ -58,51 +54,102 @@ namespace KeePassWebUI.DAL
             if(database != null)
             {
                 database.Close();
+                database = null;
             }
+
+            databaseOpen = false;
         }
 
-        public PwGroup GetRoot()
+
+
+
+
+
+        private static List<PwGroup> groupCache;
+
+        public List<KPGroup> Groups
         {
-            if (cache_group == null)
+            get
             {
-                PwDatabase db = this.Open();
-                cache_group = db.RootGroup.CloneDeep();
-            }
+                if(groupCache == null)
+                    groupCache = GetGroups();
 
-            return cache_group;
+                return groupCache
+                    .Select(g => new KPGroup
+                    {
+                        ID = g.Uuid.ToHexString(),
+                        ParentID = g.ParentGroup?.Uuid.ToHexString(),
+                        Name = g.Name
+                    })
+                    .ToList();
+            }
+        }
+
+        public KPGroup RootGroup
+        {
+            get
+            {
+                if (groupCache == null)
+                    groupCache = GetGroups();
+
+                return groupCache
+                    .Where(g => g.ParentGroup == null)
+                    .Select(g => new KPGroup
+                    {
+                        ID = g.Uuid.ToHexString(),
+                        Name = g.Name
+                    })
+                    .FirstOrDefault();
+            }
+        }
+
+        private List<PwGroup> GetGroups()
+        {
+            Open();
+
+            PwObjectList<PwGroup> groups = database.RootGroup.GetGroups(true);
+            if (groups == null)
+                groups = new PwObjectList<PwGroup>();
+
+            groups.Insert(0, database.RootGroup);
+
+            return groups.CloneDeep().ToList();
         }
 
 
-        //private static PwGroup root = null;
 
-        //public static PwGroup Root
-        //{
-        //    get
-        //    {
-        //        if (root == null)
-        //            ReadDatabase();
+        private static List<PwEntry> entryCache;
 
-        //        return root;
-        //    }
-        //}
+        public List<KPEntry> Enties
+        {
+            get
+            {
+                if (entryCache == null)
+                    entryCache = GetEntries();
 
-        //private static void ReadDatabase()
-        //{
-        //    var ioConnInfo = new IOConnectionInfo { Path = ConfigurationManager.AppSettings["databasePath"] };
-        //    var compKey = new CompositeKey();
+                return entryCache
+                    .Select(e => new KPEntry
+                    {
+                        ID = e.Uuid.ToHexString(),
+                        GroupID = e.ParentGroup.Uuid.ToHexString(),
+                        Name = e.Strings.GetSafe("Title").ReadString(),
+                        Username = e.Strings.GetSafe("UserName").ReadString(),
+                        Url = e.Strings.GetSafe("URL").ReadString(),
+                        Password = e.Strings.GetSafe("Password").ReadString()
+                    })
+                    .ToList();
+            }
+        }
 
-        //    if(!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["databasePassword"]))
-        //        compKey.AddUserKey(new KcpPassword(ConfigurationManager.AppSettings["databasePassword"]));
+        private List<PwEntry> GetEntries()
+        {
+            Open();
 
-        //    if (!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["databaseKeyFile"]))
-        //        compKey.AddUserKey(new KcpKeyFile(ConfigurationManager.AppSettings["databaseKeyFile"]));
+            PwObjectList<PwEntry> entries = database.RootGroup.GetEntries(true);
+            if (entries == null)
+                entries = new PwObjectList<PwEntry>();
 
-        //    var db = new PwDatabase();
-        //    db.Open(ioConnInfo, compKey, null);
-
-        //    root = db.RootGroup.CloneDeep();
-            
-        //    db.Close();
-        //}
+            return entries.CloneDeep().ToList();
+        }
     }
 }

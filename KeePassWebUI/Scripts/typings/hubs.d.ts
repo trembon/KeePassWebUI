@@ -10,9 +10,9 @@
 interface SignalR {
 
     /**
-      * The hub implemented by KeePassWebUI.Hubs.CatalogReaderHub
+      * The hub implemented by KeePassWebUI.Hubs.GroupReaderHub
       */
-    catalogReaderHub : CatalogReaderHub;
+    groupReaderHub : GroupReaderHub;
 
     /**
       * The hub implemented by KeePassWebUI.Hubs.EntryReaderHub
@@ -26,40 +26,40 @@ interface SignalR {
 ///////////////////////
 //#region service contracts
 
-//#region CatalogReaderHub hub
+//#region GroupReaderHub hub
 
-interface CatalogReaderHub {
+interface GroupReaderHub {
     
     /**
-      * This property lets you send messages to the CatalogReaderHub hub.
+      * This property lets you send messages to the GroupReaderHub hub.
       */
-    server : CatalogReaderHubServer;
+    server : GroupReaderHubServer;
 
     /**
-      * The functions on this property should be replaced if you want to receive messages from the CatalogReaderHub hub.
+      * The functions on this property should be replaced if you want to receive messages from the GroupReaderHub hub.
       */
     client : any;
 }
 
-interface CatalogReaderHubServer {
+interface GroupReaderHubServer {
 
     /** 
-      * Sends a "getRootNode" message to the CatalogReaderHub hub.
+      * Sends a "getRootNode" message to the GroupReaderHub hub.
       * Contract Documentation: ---
-      * @return {JQueryPromise of Catalog}
+      * @return {JQueryPromise of KPGroup}
       */
-    getRootNode() : JQueryPromise<Catalog>
+    getRootNode() : JQueryPromise<KPGroup>
 
     /** 
-      * Sends a "getChildren" message to the CatalogReaderHub hub.
+      * Sends a "getChildren" message to the GroupReaderHub hub.
       * Contract Documentation: ---
-      * @param catalogId {string} 
-      * @return {JQueryPromise of IEnumerableOfCatalog}
+      * @param groupId {string} 
+      * @return {JQueryPromise of KPGroup[]}
       */
-    getChildren(catalogId : string) : JQueryPromise<IEnumerableOfCatalog>
+    getChildren(groupId : string) : JQueryPromise<KPGroup[]>
 }
 
-//#endregion CatalogReaderHub hub
+//#endregion GroupReaderHub hub
 
 
 //#region EntryReaderHub hub
@@ -82,10 +82,10 @@ interface EntryReaderHubServer {
     /** 
       * Sends a "getEntries" message to the EntryReaderHub hub.
       * Contract Documentation: ---
-      * @param catalogId {string} 
-      * @return {JQueryPromise of Entry[]}
+      * @param groupId {string} 
+      * @return {JQueryPromise of KPEntry[]}
       */
-    getEntries(catalogId : string) : JQueryPromise<Entry[]>
+    getEntries(groupId : string) : JQueryPromise<KPEntry[]>
 }
 
 //#endregion EntryReaderHub hub
@@ -101,10 +101,11 @@ interface EntryReaderHubServer {
 
 
 /**
-  * Data contract for KeePassWebUI.Models.Entry
+  * Data contract for KeePassWebUI.Models.KPEntry
   */
-interface Entry {
+interface KPEntry {
 	ID : string;
+	GroupID : string;
 	Name : string;
 	Username : string;
 	Url : string;
@@ -113,17 +114,11 @@ interface Entry {
 
 
 /**
-  * Data contract for System.Collections.Generic.IEnumerable`1[[KeePassWebUI.Models.Catalog, KeePassWebUI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]
+  * Data contract for KeePassWebUI.Models.KPGroup
   */
-interface IEnumerableOfCatalog {
-}
-
-
-/**
-  * Data contract for KeePassWebUI.Models.Catalog
-  */
-interface Catalog {
+interface KPGroup {
 	ID : string;
+	ParentID : string;
 	Name : string;
 }
 

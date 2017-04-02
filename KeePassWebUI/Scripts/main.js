@@ -18,17 +18,17 @@ $(function () {
                 data: function (obj, callback) {
                     console.log("data loading", obj);
                     if (obj.id === "#") {
-                        $.connection.catalogReaderHub.server.getRootNode().done(function (catalog) {
-                            console.log(catalog);
-                            callback.call(_this, [{ id: catalog.ID, text: catalog.Name, children: true, type: "root", state: { opened: true } }]);
+                        $.connection.groupReaderHub.server.getRootNode().done(function (group) {
+                            console.log(group);
+                            callback.call(_this, [{ id: group.ID, text: group.Name, children: true, type: "root", state: { opened: true } }]);
                         });
                     }
                     else {
-                        $.connection.catalogReaderHub.server.getChildren(obj.id).done(function (catalogs) {
-                            console.log("children", catalogs);
+                        $.connection.groupReaderHub.server.getChildren(obj.id).done(function (groups) {
+                            console.log("children", groups);
                             var callbackData = [];
-                            for (var i = 0, len = catalogs.length; i < len; i++) {
-                                callbackData.push({ id: catalogs[i].ID, text: catalogs[i].Name, children: true, type: "default" });
+                            for (var i = 0, len = groups.length; i < len; i++) {
+                                callbackData.push({ id: groups[i].ID, text: groups[i].Name, children: true, type: "default" });
                             }
                             callback.call(_this, callbackData);
                         });

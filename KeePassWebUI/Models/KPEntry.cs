@@ -5,9 +5,11 @@ using System.Web;
 
 namespace KeePassWebUI.Models
 {
-    public class Entry
+    public class KPEntry
     {
         public string ID { get; set; }
+
+        public string GroupID { get; set; }
 
         public string Name { get; set; }
 

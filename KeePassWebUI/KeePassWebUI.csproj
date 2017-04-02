@@ -162,11 +162,11 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Hubs\CatalogReaderHub.cs" />
+    <Compile Include="Hubs\GroupReaderHub.cs" />
     <Compile Include="Hubs\EntryReaderHub.cs" />
     <Compile Include="DAL\KeePassContext.cs" />
-    <Compile Include="Models\Catalog.cs" />
-    <Compile Include="Models\Entry.cs" />
+    <Compile Include="Models\KPGroup.cs" />
+    <Compile Include="Models\KPEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>

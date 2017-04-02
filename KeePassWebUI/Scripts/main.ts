@@ -22,17 +22,17 @@
                 data: (obj, callback) => {
                     console.log("data loading", obj);
                     if (obj.id === "#") {
-                        $.connection.catalogReaderHub.server.getRootNode().done(catalog => {
-                            console.log(catalog);
-                            callback.call(this, [{ id: catalog.ID, text: catalog.Name, children: true, type: "root", state: { opened: true } }]);
+                        $.connection.groupReaderHub.server.getRootNode().done(group => {
+                            console.log(group);
+                            callback.call(this, [{ id: group.ID, text: group.Name, children: true, type: "root", state: { opened: true } }]);
                         });
                     } else {
-                        $.connection.catalogReaderHub.server.getChildren(obj.id).done(catalogs => {
-                            console.log("children", catalogs);
+                        $.connection.groupReaderHub.server.getChildren(obj.id).done(groups => {
+                            console.log("children", groups);
 
                             var callbackData = [];
-                            for (var i = 0, len = (<any>catalogs).length; i < len; i++) {
-                                callbackData.push({ id: (<any>catalogs)[i].ID, text: (<any>catalogs)[i].Name, children: true, type: "default" });
+                            for (var i = 0, len = groups.length; i < len; i++) {
+                                callbackData.push({ id: groups[i].ID, text: groups[i].Name, children: true, type: "default" });
                             }
 
                             callback.call(this, callbackData);
