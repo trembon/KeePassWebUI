@@ -16,7 +16,7 @@ namespace KeePassWebUI.Hubs
             using (var context = KeePassContext.Create())
             {
                 return context
-                    .Enties
+                    .Entries
                     .Where(e => e.GroupID == groupId)
                     .ToList();
             }

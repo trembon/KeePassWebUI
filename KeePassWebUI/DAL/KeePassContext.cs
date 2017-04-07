@@ -17,8 +17,6 @@ namespace KeePassWebUI.DAL
         private PwDatabase database;
         private bool databaseOpen;
 
-        private static PwGroup cache_group;
-
         private KeePassContext()
         {
             databaseOpen = false;
@@ -59,12 +57,8 @@ namespace KeePassWebUI.DAL
 
             databaseOpen = false;
         }
-
-
-
-
-
-
+        
+        #region Groups
         private static List<PwGroup> groupCache;
 
         public List<KPGroup> Groups
@@ -85,24 +79,6 @@ namespace KeePassWebUI.DAL
             }
         }
 
-        public KPGroup RootGroup
-        {
-            get
-            {
-                if (groupCache == null)
-                    groupCache = GetGroups();
-
-                return groupCache
-                    .Where(g => g.ParentGroup == null)
-                    .Select(g => new KPGroup
-                    {
-                        ID = g.Uuid.ToHexString(),
-                        Name = g.Name
-                    })
-                    .FirstOrDefault();
-            }
-        }
-
         private List<PwGroup> GetGroups()
         {
             Open();
@@ -115,12 +91,19 @@ namespace KeePassWebUI.DAL
 
             return groups.CloneDeep().ToList();
         }
+        #endregion
 
+        #region Groups write actions
+        public bool AddGroup(KPGroup group)
+        {
 
+        }
+        #endregion
 
+        #region Entries
         private static List<PwEntry> entryCache;
 
-        public List<KPEntry> Enties
+        public List<KPEntry> Entries
         {
             get
             {
@@ -151,5 +134,6 @@ namespace KeePassWebUI.DAL
 
             return entries.CloneDeep().ToList();
         }
+        #endregion
     }
 }

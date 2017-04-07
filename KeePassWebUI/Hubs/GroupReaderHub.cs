@@ -20,7 +20,7 @@ namespace KeePassWebUI.Hubs
         {
             using (var context = KeePassContext.Create())
             {
-                return context.RootGroup;
+                return context.Groups.FirstOrDefault(g => g.ParentID == null);
             }
         }
 
