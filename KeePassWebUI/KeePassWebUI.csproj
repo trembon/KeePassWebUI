@@ -171,6 +171,8 @@
     <Compile Include="Startup.cs" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="Scripts\app\list.ts" />
+    <TypeScriptCompile Include="Scripts\app\tree.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
     <TypeScriptCompile Include="Scripts\typings\hubs.d.ts">
       <AutoGen>True</AutoGen>

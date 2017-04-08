@@ -94,10 +94,10 @@ namespace KeePassWebUI.DAL
         #endregion
 
         #region Groups write actions
-        public bool AddGroup(KPGroup group)
-        {
+        //public bool AddGroup(KPGroup group)
+        //{
 
-        }
+        //}
         #endregion
 
         #region Entries
