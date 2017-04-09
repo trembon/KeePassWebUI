@@ -7,8 +7,10 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Hosting;
 
 namespace KeePassWebUI.DAL
 {
@@ -34,14 +36,24 @@ namespace KeePassWebUI.DAL
 
             databaseOpen = true;
 
-            var ioConnInfo = new IOConnectionInfo { Path = ConfigurationManager.AppSettings["databasePath"] };
+            string dbPath = ConfigurationManager.AppSettings["databasePath"];
+            if (!File.Exists(dbPath))
+                dbPath = HostingEnvironment.MapPath(dbPath);
+
+            var ioConnInfo = new IOConnectionInfo { Path = dbPath };
             var compKey = new CompositeKey();
 
             if (!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["databasePassword"]))
                 compKey.AddUserKey(new KcpPassword(ConfigurationManager.AppSettings["databasePassword"]));
 
-            if (!string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings["databaseKeyFile"]))
-                compKey.AddUserKey(new KcpKeyFile(ConfigurationManager.AppSettings["databaseKeyFile"]));
+            string keyPath = ConfigurationManager.AppSettings["databaseKeyFile"];
+            if (!string.IsNullOrWhiteSpace(keyPath))
+            {
+                if (!File.Exists(keyPath))
+                    keyPath = HostingEnvironment.MapPath(keyPath);
+
+                compKey.AddUserKey(new KcpKeyFile(keyPath));
+            }
 
             database = new PwDatabase();
             database.Open(ioConnInfo, compKey, null);
@@ -94,10 +106,10 @@ namespace KeePassWebUI.DAL
         #endregion
 
         #region Groups write actions
-        //public bool AddGroup(KPGroup group)
-        //{
-
-        //}
+        public bool AddGroup(KPGroup group)
+        {
+            return false;
+        }
         #endregion
 
         #region Entries
