@@ -147,5 +147,36 @@ namespace KeePassWebUI.DAL
             return entries.CloneDeep().ToList();
         }
         #endregion
+
+        #region Entry write actions
+        public bool AddEntry(KPEntry entry)
+        {
+            Open();
+
+            PwGroup group = null;
+            if(database.RootGroup.Uuid.ToHexString().Equals(entry.GroupID, StringComparison.OrdinalIgnoreCase))
+            {
+                group = database.RootGroup;
+            }
+            else
+            {
+                group = database.RootGroup.GetGroups(true).FirstOrDefault(g => g.Uuid.ToHexString().Equals(entry.GroupID, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (group == null)
+                return false;
+
+            PwEntry newEntry = new PwEntry(true, true);
+            newEntry.Strings.Set("Title", new KeePassLib.Security.ProtectedString(false, entry.Name));
+            newEntry.Strings.Set("UserName", new KeePassLib.Security.ProtectedString(false, entry.Username));
+            newEntry.Strings.Set("Password", new KeePassLib.Security.ProtectedString(true, entry.Password));
+            newEntry.Strings.Set("URL", new KeePassLib.Security.ProtectedString(false, entry.Url));
+
+            group.AddEntry(newEntry, false);
+            database.Save(null);
+
+            return true;
+        }
+        #endregion
     }
 }

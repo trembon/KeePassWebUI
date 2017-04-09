@@ -21,5 +21,13 @@ namespace KeePassWebUI.Hubs
                     .ToList();
             }
         }
+
+        public void AddEntry(string groupId, string name)
+        {
+            using(var context = KeePassContext.Create())
+            {
+                context.AddEntry(new KPEntry { GroupID = groupId, Name = name, Password = "Password!", Url = "http://www.google.se/", Username = "admin" });
+            }
+        }
     }
 }

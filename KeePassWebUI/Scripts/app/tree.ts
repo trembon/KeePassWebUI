@@ -33,6 +33,15 @@
         jsTree = $("#catalog-tree").jstree(true);
     }
 
+    export function getSelectedGroup(): string {
+        // TODO: findbetter solution?
+        let selectedNodes: any[] = $('#catalog-tree').jstree('get_selected');
+        if (selectedNodes.length == 1)
+            return selectedNodes[0];
+
+        return "";
+    }
+
     function onChanged(e: JQueryEventObject, data: any): void {
         $.connection.entryReaderHub.server.getEntries(data.node.id).done(list.populateList);
         jsTree.open_node(data.node);

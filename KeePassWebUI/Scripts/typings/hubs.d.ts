@@ -86,6 +86,15 @@ interface EntryReaderHubServer {
       * @return {JQueryPromise of KPEntry[]}
       */
     getEntries(groupId : string) : JQueryPromise<KPEntry[]>
+
+    /** 
+      * Sends a "addEntry" message to the EntryReaderHub hub.
+      * Contract Documentation: ---
+      * @param groupId {string} 
+      * @param name {string} 
+      * @return {JQueryPromise of void}
+      */
+    addEntry(groupId : string, name : string) : JQueryPromise<void>
 }
 
 //#endregion EntryReaderHub hub
