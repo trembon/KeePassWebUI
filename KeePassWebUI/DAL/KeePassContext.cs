@@ -16,6 +16,8 @@ namespace KeePassWebUI.DAL
 {
     public class KeePassContext : IDisposable
     {
+        private static object databaseLock = new object();
+
         private PwDatabase database;
         private bool databaseOpen;
 
@@ -77,8 +79,13 @@ namespace KeePassWebUI.DAL
         {
             get
             {
-                if(groupCache == null)
-                    groupCache = GetGroups();
+                if (groupCache == null)
+                {
+                    lock (databaseLock)
+                    {
+                        groupCache = GetGroups();
+                    }
+                }
 
                 return groupCache
                     .Select(g => new KPGroup
@@ -88,6 +95,20 @@ namespace KeePassWebUI.DAL
                         Name = g.Name
                     })
                     .ToList();
+            }
+        }
+
+        private PwGroup GetGroup(string id)
+        {
+            Open();
+
+            if (database.RootGroup.Uuid.ToHexString().Equals(id, StringComparison.OrdinalIgnoreCase))
+            {
+                return database.RootGroup;
+            }
+            else
+            {
+                return database.RootGroup.GetGroups(true).FirstOrDefault(g => g.Uuid.ToHexString().Equals(id, StringComparison.OrdinalIgnoreCase));
             }
         }
 
@@ -108,7 +129,22 @@ namespace KeePassWebUI.DAL
         #region Groups write actions
         public bool AddGroup(KPGroup group)
         {
-            return false;
+            lock (databaseLock)
+            {
+                Open();
+
+                PwGroup parent = GetGroup(group.ParentID);
+                if (parent == null)
+                    return false;
+
+                PwGroup newGroup = new PwGroup(true, true);
+                newGroup.Name = group.Name;
+
+                parent.AddGroup(newGroup, false);
+                database.Save(null);
+
+                return true;
+            }
         }
         #endregion
 
@@ -120,7 +156,12 @@ namespace KeePassWebUI.DAL
             get
             {
                 if (entryCache == null)
-                    entryCache = GetEntries();
+                {
+                    lock (databaseLock)
+                    {
+                        entryCache = GetEntries();
+                    }
+                }
 
                 return entryCache
                     .Select(e => new KPEntry
@@ -151,31 +192,29 @@ namespace KeePassWebUI.DAL
         #region Entry write actions
         public bool AddEntry(KPEntry entry)
         {
-            Open();
-
-            PwGroup group = null;
-            if(database.RootGroup.Uuid.ToHexString().Equals(entry.GroupID, StringComparison.OrdinalIgnoreCase))
+            lock (databaseLock)
             {
-                group = database.RootGroup;
+                Open();
+
+                PwGroup parent = GetGroup(entry.GroupID);
+                if (parent == null)
+                    return false;
+
+                PwEntry newEntry = new PwEntry(true, true);
+                newEntry.Strings.Set("Title", new KeePassLib.Security.ProtectedString(false, entry.Name));
+                newEntry.Strings.Set("UserName", new KeePassLib.Security.ProtectedString(false, entry.Username));
+                newEntry.Strings.Set("Password", new KeePassLib.Security.ProtectedString(true, entry.Password));
+                newEntry.Strings.Set("URL", new KeePassLib.Security.ProtectedString(false, entry.Url));
+
+                parent.AddEntry(newEntry, false);
+                database.Save(null);
+
+                entry.ID = newEntry.Uuid.ToHexString();
+
+                entryCache = null;
+
+                return true;
             }
-            else
-            {
-                group = database.RootGroup.GetGroups(true).FirstOrDefault(g => g.Uuid.ToHexString().Equals(entry.GroupID, StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (group == null)
-                return false;
-
-            PwEntry newEntry = new PwEntry(true, true);
-            newEntry.Strings.Set("Title", new KeePassLib.Security.ProtectedString(false, entry.Name));
-            newEntry.Strings.Set("UserName", new KeePassLib.Security.ProtectedString(false, entry.Username));
-            newEntry.Strings.Set("Password", new KeePassLib.Security.ProtectedString(true, entry.Password));
-            newEntry.Strings.Set("URL", new KeePassLib.Security.ProtectedString(false, entry.Url));
-
-            group.AddEntry(newEntry, false);
-            database.Save(null);
-
-            return true;
         }
         #endregion
     }

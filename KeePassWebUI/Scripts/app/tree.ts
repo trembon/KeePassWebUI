@@ -43,19 +43,19 @@
     }
 
     function onChanged(e: JQueryEventObject, data: any): void {
-        $.connection.entryReaderHub.server.getEntries(data.node.id).done(list.populateList);
+        $.connection.entryHub.server.getEntries(data.node.id).done(list.populateList);
         jsTree.open_node(data.node);
     }
 
     function onLoadingChildren(obj, callback): void {
         console.log("data loading", obj);
         if (obj.id === "#") {
-            $.connection.groupReaderHub.server.getRootNode().done(group => {
+            $.connection.groupHub.server.getRootNode().done(group => {
                 console.log(group);
                 callback.call(this, [{ id: group.ID, text: group.Name, children: true, type: "root", state: { opened: true } }]);
             });
         } else {
-            $.connection.groupReaderHub.server.getChildren(obj.id).done(groups => {
+            $.connection.groupHub.server.getChildren(obj.id).done(groups => {
                 console.log("children", groups);
 
                 var callbackData = [];

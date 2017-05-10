@@ -14,7 +14,7 @@ namespace KeePassWebUI.Hubs
         void SomethingUpdated();
     }
 
-    public class GroupReaderHub : Hub<CatalogReaderClientContract>
+    public class GroupHub : Hub<CatalogReaderClientContract>
     {
         public KPGroup GetRootNode()
         {

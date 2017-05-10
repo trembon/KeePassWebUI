@@ -10,14 +10,14 @@
 interface SignalR {
 
     /**
-      * The hub implemented by KeePassWebUI.Hubs.GroupReaderHub
+      * The hub implemented by KeePassWebUI.Hubs.GroupHub
       */
-    groupReaderHub : GroupReaderHub;
+    groupHub : GroupHub;
 
     /**
-      * The hub implemented by KeePassWebUI.Hubs.EntryReaderHub
+      * The hub implemented by KeePassWebUI.Hubs.EntryHub
       */
-    entryReaderHub : EntryReaderHub;
+    entryHub : EntryHub;
 }
 //#endregion available hubs
 
@@ -26,32 +26,32 @@ interface SignalR {
 ///////////////////////
 //#region service contracts
 
-//#region GroupReaderHub hub
+//#region GroupHub hub
 
-interface GroupReaderHub {
+interface GroupHub {
     
     /**
-      * This property lets you send messages to the GroupReaderHub hub.
+      * This property lets you send messages to the GroupHub hub.
       */
-    server : GroupReaderHubServer;
+    server : GroupHubServer;
 
     /**
-      * The functions on this property should be replaced if you want to receive messages from the GroupReaderHub hub.
+      * The functions on this property should be replaced if you want to receive messages from the GroupHub hub.
       */
     client : any;
 }
 
-interface GroupReaderHubServer {
+interface GroupHubServer {
 
     /** 
-      * Sends a "getRootNode" message to the GroupReaderHub hub.
+      * Sends a "getRootNode" message to the GroupHub hub.
       * Contract Documentation: ---
       * @return {JQueryPromise of KPGroup}
       */
     getRootNode() : JQueryPromise<KPGroup>
 
     /** 
-      * Sends a "getChildren" message to the GroupReaderHub hub.
+      * Sends a "getChildren" message to the GroupHub hub.
       * Contract Documentation: ---
       * @param groupId {string} 
       * @return {JQueryPromise of KPGroup[]}
@@ -59,28 +59,28 @@ interface GroupReaderHubServer {
     getChildren(groupId : string) : JQueryPromise<KPGroup[]>
 }
 
-//#endregion GroupReaderHub hub
+//#endregion GroupHub hub
 
 
-//#region EntryReaderHub hub
+//#region EntryHub hub
 
-interface EntryReaderHub {
+interface EntryHub {
     
     /**
-      * This property lets you send messages to the EntryReaderHub hub.
+      * This property lets you send messages to the EntryHub hub.
       */
-    server : EntryReaderHubServer;
+    server : EntryHubServer;
 
     /**
-      * The functions on this property should be replaced if you want to receive messages from the EntryReaderHub hub.
+      * The functions on this property should be replaced if you want to receive messages from the EntryHub hub.
       */
     client : any;
 }
 
-interface EntryReaderHubServer {
+interface EntryHubServer {
 
     /** 
-      * Sends a "getEntries" message to the EntryReaderHub hub.
+      * Sends a "getEntries" message to the EntryHub hub.
       * Contract Documentation: ---
       * @param groupId {string} 
       * @return {JQueryPromise of KPEntry[]}
@@ -88,16 +88,15 @@ interface EntryReaderHubServer {
     getEntries(groupId : string) : JQueryPromise<KPEntry[]>
 
     /** 
-      * Sends a "addEntry" message to the EntryReaderHub hub.
+      * Sends a "addEntry" message to the EntryHub hub.
       * Contract Documentation: ---
-      * @param groupId {string} 
-      * @param name {string} 
-      * @return {JQueryPromise of void}
+      * @param entry {KPEntry} 
+      * @return {JQueryPromise of boolean}
       */
-    addEntry(groupId : string, name : string) : JQueryPromise<void>
+    addEntry(entry : KPEntry) : JQueryPromise<boolean>
 }
 
-//#endregion EntryReaderHub hub
+//#endregion EntryHub hub
 
 //#endregion service contracts
 

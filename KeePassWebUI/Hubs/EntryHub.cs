@@ -9,7 +9,12 @@ using System.Web;
 
 namespace KeePassWebUI.Hubs
 {
-    public class EntryReaderHub : Hub
+    public interface IEntryHubClient
+    {
+        void EntryAdded(KPEntry entry);
+    }
+
+    public class EntryHub : Hub<IEntryHubClient>
     {
         public List<KPEntry> GetEntries(string groupId)
         {
@@ -22,11 +27,16 @@ namespace KeePassWebUI.Hubs
             }
         }
 
-        public void AddEntry(string groupId, string name)
+        public bool AddEntry(KPEntry entry)
         {
             using(var context = KeePassContext.Create())
             {
-                context.AddEntry(new KPEntry { GroupID = groupId, Name = name, Password = "Password!", Url = "http://www.google.se/", Username = "admin" });
+                bool result = context.AddEntry(entry);
+
+                if (result)
+                    Clients.All.EntryAdded(entry);
+
+                return result;
             }
         }
     }

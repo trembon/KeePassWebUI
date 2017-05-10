@@ -162,8 +162,8 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Hubs\GroupReaderHub.cs" />
-    <Compile Include="Hubs\EntryReaderHub.cs" />
+    <Compile Include="Hubs\GroupHub.cs" />
+    <Compile Include="Hubs\EntryHub.cs" />
     <Compile Include="DAL\KeePassContext.cs" />
     <Compile Include="Models\KPGroup.cs" />
     <Compile Include="Models\KPEntry.cs" />
@@ -172,8 +172,10 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\list.ts" />
+    <TypeScriptCompile Include="Scripts\app\modals.ts" />
     <TypeScriptCompile Include="Scripts\app\tree.ts" />
     <TypeScriptCompile Include="Scripts\main.ts" />
+    <TypeScriptCompile Include="Scripts\typings\bootstrap\index.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\hubs.d.ts">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
