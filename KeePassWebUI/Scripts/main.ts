@@ -1,8 +1,11 @@
 ﻿$(() => {
-    $.connection.hub.start().done(function () {
-        list.init();
-        tree.init();
-        modals.init();
+    var triggers: Array<() => void> = [];
+    triggers.push(list.init());
+    triggers.push(tree.init());
+    triggers.push(modals.init());
+
+    $.connection.hub.start().done(() => {
+        triggers.forEach(val => val());
 
         $("#add-entry-btn").click(e => {
             e.preventDefault();
@@ -27,6 +30,20 @@
                 //$.connection.entryReaderHub.server.addEntry(selectedGroup, "demo item").done(() => {
                 //    console.log("item added!");
                 //});
+            }
+        });
+
+        $("#add-group-btn").click(e => {
+            e.preventDefault();
+            let selectedGroup = tree.getSelectedGroup();
+            if (selectedGroup !== "") {
+                let tempGroup = <KPGroup>{ ParentID: selectedGroup };
+                modals.showGroupModal(tempGroup, group => {
+                    console.log("modals.showGroupModal - callback", group);
+                    $.connection.groupHub.server.addGroup(group).done(res => {
+                        console.log("addGroup", res);
+                    });
+                });
             }
         });
     });

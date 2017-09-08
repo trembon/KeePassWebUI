@@ -9,30 +9,35 @@ using System.Web;
 
 namespace KeePassWebUI.Hubs
 {
-    public interface CatalogReaderClientContract
+    public interface IGroupHubClient
     {
-        void SomethingUpdated();
+        void groupAdded(KPGroup group);
     }
 
-    public class GroupHub : Hub<CatalogReaderClientContract>
+    public class GroupHub : Hub<IGroupHubClient>
     {
         public KPGroup GetRootNode()
         {
-            using (var context = KeePassContext.Create())
-            {
-                return context.Groups.FirstOrDefault(g => g.ParentID == null);
-            }
+            return KeePassContext.Instance.Groups.FirstOrDefault(g => g.ParentID == null);
         }
 
         public List<KPGroup> GetChildren(string groupId)
         {
-            using (var context = KeePassContext.Create())
-            {
-                return context
-                    .Groups
-                    .Where(g => g.ParentID == groupId)
-                    .ToList();
-            }
+            return KeePassContext
+                .Instance
+                .Groups
+                .Where(g => g.ParentID == groupId)
+                .ToList();
+        }
+
+        public bool AddGroup(KPGroup group)
+        {
+            bool result = KeePassContext.Instance.AddGroup(group);
+
+            if (result)
+                Clients.All.groupAdded(group);
+
+            return result;
         }
     }
 }

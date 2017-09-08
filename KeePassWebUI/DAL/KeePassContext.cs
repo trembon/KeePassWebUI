@@ -14,30 +14,20 @@ using System.Web.Hosting;
 
 namespace KeePassWebUI.DAL
 {
-    public class KeePassContext : IDisposable
+    public class KeePassContext
     {
-        private static object databaseLock = new object();
+        #region Singleton
+        public static KeePassContext Instance { get; } = new KeePassContext();
+        #endregion
 
-        private PwDatabase database;
-        private bool databaseOpen;
+        private static object databaseLock = new object();
 
         private KeePassContext()
         {
-            databaseOpen = false;
         }
 
-        public static KeePassContext Create()
+        private DisposablePwDatabase Open()
         {
-            return new KeePassContext();
-        }
-
-        private void Open()
-        {
-            if (databaseOpen)
-                return;
-
-            databaseOpen = true;
-
             string dbPath = ConfigurationManager.AppSettings["databasePath"];
             if (!File.Exists(dbPath))
                 dbPath = HostingEnvironment.MapPath(dbPath);
@@ -57,19 +47,10 @@ namespace KeePassWebUI.DAL
                 compKey.AddUserKey(new KcpKeyFile(keyPath));
             }
 
-            database = new PwDatabase();
+            PwDatabase database = new PwDatabase();
             database.Open(ioConnInfo, compKey, null);
-        }
 
-        public void Dispose()
-        {
-            if(database != null)
-            {
-                database.Close();
-                database = null;
-            }
-
-            databaseOpen = false;
+            return new DisposablePwDatabase(database);
         }
         
         #region Groups
@@ -81,10 +62,7 @@ namespace KeePassWebUI.DAL
             {
                 if (groupCache == null)
                 {
-                    lock (databaseLock)
-                    {
-                        groupCache = GetGroups();
-                    }
+                    groupCache = GetGroups();
                 }
 
                 return groupCache
@@ -98,10 +76,8 @@ namespace KeePassWebUI.DAL
             }
         }
 
-        private PwGroup GetGroup(string id)
+        private PwGroup GetGroup(string id, PwDatabase database)
         {
-            Open();
-
             if (database.RootGroup.Uuid.ToHexString().Equals(id, StringComparison.OrdinalIgnoreCase))
             {
                 return database.RootGroup;
@@ -114,15 +90,19 @@ namespace KeePassWebUI.DAL
 
         private List<PwGroup> GetGroups()
         {
-            Open();
+            lock (databaseLock)
+            {
+                using (var connection = Open())
+                {
+                    PwObjectList<PwGroup> groups = connection.Database.RootGroup.GetGroups(true);
+                    if (groups == null)
+                        groups = new PwObjectList<PwGroup>();
 
-            PwObjectList<PwGroup> groups = database.RootGroup.GetGroups(true);
-            if (groups == null)
-                groups = new PwObjectList<PwGroup>();
+                    groups.Insert(0, connection.Database.RootGroup);
 
-            groups.Insert(0, database.RootGroup);
-
-            return groups.CloneDeep().ToList();
+                    return groups.CloneDeep().ToList();
+                }
+            }
         }
         #endregion
 
@@ -131,19 +111,26 @@ namespace KeePassWebUI.DAL
         {
             lock (databaseLock)
             {
-                Open();
+                using (var connection = Open())
+                {
+                    PwGroup parent = GetGroup(group.ParentID, connection.Database);
+                    if (parent == null)
+                        return false;
 
-                PwGroup parent = GetGroup(group.ParentID);
-                if (parent == null)
-                    return false;
+                    PwGroup newGroup = new PwGroup(true, true);
+                    newGroup.Name = group.Name;
+                    newGroup.EnableAutoType = false;
+                    newGroup.EnableSearching = false;
 
-                PwGroup newGroup = new PwGroup(true, true);
-                newGroup.Name = group.Name;
+                    parent.AddGroup(newGroup, true);
+                    connection.Database.Save(null);
 
-                parent.AddGroup(newGroup, false);
-                database.Save(null);
+                    group.ID = newGroup.Uuid.ToHexString();
 
-                return true;
+                    groupCache = null;
+
+                    return true;
+                }
             }
         }
         #endregion
@@ -156,12 +143,7 @@ namespace KeePassWebUI.DAL
             get
             {
                 if (entryCache == null)
-                {
-                    lock (databaseLock)
-                    {
                         entryCache = GetEntries();
-                    }
-                }
 
                 return entryCache
                     .Select(e => new KPEntry
@@ -179,13 +161,17 @@ namespace KeePassWebUI.DAL
 
         private List<PwEntry> GetEntries()
         {
-            Open();
+            lock (databaseLock)
+            {
+                using (var connection = Open())
+                {
+                    PwObjectList<PwEntry> entries = connection.Database.RootGroup.GetEntries(true);
+                    if (entries == null)
+                        entries = new PwObjectList<PwEntry>();
 
-            PwObjectList<PwEntry> entries = database.RootGroup.GetEntries(true);
-            if (entries == null)
-                entries = new PwObjectList<PwEntry>();
-
-            return entries.CloneDeep().ToList();
+                    return entries.CloneDeep().ToList();
+                }
+            }
         }
         #endregion
 
@@ -194,26 +180,27 @@ namespace KeePassWebUI.DAL
         {
             lock (databaseLock)
             {
-                Open();
+                using (var connection = Open())
+                {
+                    PwGroup parent = GetGroup(entry.GroupID, connection.Database);
+                    if (parent == null)
+                        return false;
 
-                PwGroup parent = GetGroup(entry.GroupID);
-                if (parent == null)
-                    return false;
+                    PwEntry newEntry = new PwEntry(true, true);
+                    newEntry.Strings.Set("Title", new KeePassLib.Security.ProtectedString(false, entry.Name));
+                    newEntry.Strings.Set("UserName", new KeePassLib.Security.ProtectedString(false, entry.Username));
+                    newEntry.Strings.Set("Password", new KeePassLib.Security.ProtectedString(true, entry.Password));
+                    newEntry.Strings.Set("URL", new KeePassLib.Security.ProtectedString(false, entry.Url));
 
-                PwEntry newEntry = new PwEntry(true, true);
-                newEntry.Strings.Set("Title", new KeePassLib.Security.ProtectedString(false, entry.Name));
-                newEntry.Strings.Set("UserName", new KeePassLib.Security.ProtectedString(false, entry.Username));
-                newEntry.Strings.Set("Password", new KeePassLib.Security.ProtectedString(true, entry.Password));
-                newEntry.Strings.Set("URL", new KeePassLib.Security.ProtectedString(false, entry.Url));
+                    parent.AddEntry(newEntry, false);
+                    connection.Database.Save(null);
 
-                parent.AddEntry(newEntry, false);
-                database.Save(null);
+                    entry.ID = newEntry.Uuid.ToHexString();
 
-                entry.ID = newEntry.Uuid.ToHexString();
+                    entryCache = null;
 
-                entryCache = null;
-
-                return true;
+                    return true;
+                }
             }
         }
         #endregion

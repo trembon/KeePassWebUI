@@ -61,9 +61,9 @@
                         <span class="glyphicon glyphicon-plus"></span>
                         <span>Add Entry</span>
                     </a>
-                    <a class="button" href="#">
+                    <a id="add-group-btn" class="button" href="#">
                         <span class="glyphicon glyphicon-edit"></span>
-                        <span>Edit Entry</span>
+                        <span>Add Group</span>
                     </a>
                     <a class="button" href="#">
                         <span class="glyphicon glyphicon-remove-circle"></span>
@@ -106,6 +106,28 @@
                             <div class="form-group">
                                 <label for="modal-entry-url">Url</label>
                                 <input type="text" class="form-control" id="modal-entry-url" name="url" placeholder="URL" />
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default cancel" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary ok">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="modal-group" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Group</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form class="form" role="form">
+                            <div class="form-group">
+                                <label for="modal-entry-name">Name</label>
+                                <input type="text" class="form-control" id="modal-entry-name" name="name" placeholder="Name" />
                             </div>
                         </form>
                     </div>

@@ -1,8 +1,11 @@
 var modals;
 (function (modals) {
     var $entryModal;
+    var $groupModal;
     function init() {
         initEntry();
+        initGroup();
+        return function () { };
     }
     modals.init = init;
     function initEntry() {
@@ -16,6 +19,9 @@ var modals;
                 $("#modal-entry-password").attr("type", "password");
             }
         });
+    }
+    function initGroup() {
+        $groupModal = $("#modal-group");
     }
     function showEntryModal(entry, callback) {
         if (entry === null || entry.GroupID === null) {
@@ -42,5 +48,23 @@ var modals;
         $entryModal.modal("show");
     }
     modals.showEntryModal = showEntryModal;
+    function showGroupModal(group, callback) {
+        if (group === null || group.ParentID === null) {
+            callback(null);
+        }
+        $groupModal.find(".ok").one("click", function () {
+            $groupModal.modal("hide");
+            group.Name = $groupModal.find("form input[name='name']").val();
+            console.log("showGroupModal - done");
+            callback(group);
+        });
+        $groupModal.find(".cancel").one("click", function () {
+            console.log("showGroupModal - cancel");
+            callback(null);
+        });
+        $groupModal.find("form input[name='name']").val(group.Name);
+        $groupModal.modal("show");
+    }
+    modals.showGroupModal = showGroupModal;
 })(modals || (modals = {}));
 //# sourceMappingURL=modals.js.map

@@ -38,7 +38,7 @@ interface GroupHub {
     /**
       * The functions on this property should be replaced if you want to receive messages from the GroupHub hub.
       */
-    client : any;
+    client : GroupHubClient;
 }
 
 interface GroupHubServer {
@@ -57,6 +57,26 @@ interface GroupHubServer {
       * @return {JQueryPromise of KPGroup[]}
       */
     getChildren(groupId : string) : JQueryPromise<KPGroup[]>
+
+    /** 
+      * Sends a "addGroup" message to the GroupHub hub.
+      * Contract Documentation: ---
+      * @param group {KPGroup} 
+      * @return {JQueryPromise of boolean}
+      */
+    addGroup(group : KPGroup) : JQueryPromise<boolean>
+}
+
+interface GroupHubClient
+{
+
+    /**
+      * Set this function with a "function(group : KPGroup){}" to receive the "groupAdded" message from the GroupHub hub.
+      * Contract Documentation: ---
+      * @param group {KPGroup} 
+      * @return {void}
+      */
+    groupAdded : (group : KPGroup) => void;
 }
 
 //#endregion GroupHub hub
@@ -74,7 +94,7 @@ interface EntryHub {
     /**
       * The functions on this property should be replaced if you want to receive messages from the EntryHub hub.
       */
-    client : any;
+    client : EntryHubClient;
 }
 
 interface EntryHubServer {
@@ -94,6 +114,18 @@ interface EntryHubServer {
       * @return {JQueryPromise of boolean}
       */
     addEntry(entry : KPEntry) : JQueryPromise<boolean>
+}
+
+interface EntryHubClient
+{
+
+    /**
+      * Set this function with a "function(entry : KPEntry){}" to receive the "entryAdded" message from the EntryHub hub.
+      * Contract Documentation: ---
+      * @param entry {KPEntry} 
+      * @return {void}
+      */
+    entryAdded : (entry : KPEntry) => void;
 }
 
 //#endregion EntryHub hub

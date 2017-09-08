@@ -1,9 +1,13 @@
 ﻿namespace modals {
     
     let $entryModal: JQuery;
+    let $groupModal: JQuery;
 
-    export function init(): void {
+    export function init(): () => void {
         initEntry();
+        initGroup();
+
+        return () => { };
     }
 
     function initEntry(): void {
@@ -17,6 +21,10 @@
                 $("#modal-entry-password").attr("type", "password");
             }
         });
+    }
+
+    function initGroup(): void {
+        $groupModal = $("#modal-group");
     }
 
     export function showEntryModal(entry: KPEntry, callback: (entry: KPEntry) => void): void {
@@ -48,5 +56,28 @@
         $entryModal.find("form input[name='url']").val(entry.Url);
 
         $entryModal.modal("show");
+    }
+
+    export function showGroupModal(group: KPGroup, callback: (group: KPGroup) => void): void {
+        if (group === null || group.ParentID === null) {
+            callback(null);
+        }
+
+        $groupModal.find(".ok").one("click", () => {
+            $groupModal.modal("hide");
+
+            group.Name = $groupModal.find("form input[name='name']").val();
+
+            console.log(`showGroupModal - done`);
+            callback(group);
+        });
+
+        $groupModal.find(".cancel").one("click", () => {
+            console.log(`showGroupModal - cancel`);
+            callback(null);
+        });
+
+        $groupModal.find("form input[name='name']").val(group.Name);
+        $groupModal.modal("show");
     }
 }

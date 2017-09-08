@@ -162,6 +162,7 @@
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DAL\DisposablePwDatabase.cs" />
     <Compile Include="Hubs\GroupHub.cs" />
     <Compile Include="Hubs\EntryHub.cs" />
     <Compile Include="DAL\KeePassContext.cs" />

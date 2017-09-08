@@ -2,35 +2,39 @@
 
     let jsTree: JSTree;
 
-    export function init(): void {
-        $("#catalog-tree")
-            .on('changed.jstree', onChanged)
-            .jstree({
-                core: {
-                    data: onLoadingChildren,
-                    check_callback: (operation, node, node_parent, node_position, more) => {
-                        return true;
-                    },
-                    multiple: false,
-                    error: () => { console.log("jsTree: unexpected error (verify check_callback)"); }
-                },
-                plugins: ['html_data', 'types', 'changed', 'wholerow', 'dnd'],
-                types: {
-                    "#": {
-                        "valid_children": ["root"]
-                    },
-                    "root": {
-                        "icon": "jstree-folder",
-                        "valid_children": ["default"]
-                    },
-                    "default": {
-                        "icon": "jstree-file",
-                        "valid_children": ["default"]
-                    }
-                }
-            });
+    export function init(): () => void {
+        $.signalR.groupHub.client.groupAdded = event_groupAdded;
 
-        jsTree = $("#catalog-tree").jstree(true);
+        return () => {
+            $("#catalog-tree")
+                .on('changed.jstree', onChanged)
+                .jstree({
+                    core: {
+                        data: onLoadingChildren,
+                        check_callback: (operation, node, node_parent, node_position, more) => {
+                            return true;
+                        },
+                        multiple: false,
+                        error: () => { console.log("jsTree: unexpected error (verify check_callback)"); }
+                    },
+                    plugins: ['html_data', 'types', 'changed', 'wholerow', 'dnd'],
+                    types: {
+                        "#": {
+                            "valid_children": ["root"]
+                        },
+                        "root": {
+                            "icon": "jstree-folder",
+                            "valid_children": ["default"]
+                        },
+                        "default": {
+                            "icon": "jstree-file",
+                            "valid_children": ["default"]
+                        }
+                    }
+                });
+
+            jsTree = $("#catalog-tree").jstree(true);
+        };
     }
 
     export function getSelectedGroup(): string {
@@ -40,6 +44,20 @@
             return selectedNodes[0];
 
         return "";
+    }
+
+    function event_groupAdded(item: KPGroup): void {
+        console.log("groupAdded_event", item);
+
+        let node = jsTree.get_node(item.ParentID);
+        console.log("found node", node);
+        if (node === null)
+            return;
+
+        if (jsTree.is_open(node) || node.id === getSelectedGroup()) {
+            jsTree.create_node(node, { id: item.ID, text: item.Name, children: true, type: "default" });
+            jsTree.open_node(node);
+        }
     }
 
     function onChanged(e: JQueryEventObject, data: any): void {
